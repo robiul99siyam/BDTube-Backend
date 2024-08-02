@@ -12,7 +12,7 @@ router.register("review",views.reviewViewsets)
 
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
     path('video/<int:id>/like',views.LikeViewset.as_view(),name='like-create'),
    
 ]
