@@ -37,3 +37,4 @@ tzdata
 virtualenv
 django-cors-headers
 django-rest-multiple-models
+matplotlib

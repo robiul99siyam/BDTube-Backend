@@ -66,3 +66,15 @@ class Notification(models.Model):
     content = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class WatchLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.ForeignKey('contentModel', on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    def watch_duration(self):
+        if self.end_time:
+            return (self.end_time - self.start_time).total_seconds()
+        return 0

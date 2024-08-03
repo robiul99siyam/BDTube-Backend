@@ -6,12 +6,19 @@ from rest_framework import generics,status
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 import json
+import matplotlib.pyplot as plt
+import os
+from django.conf import settings
 #this is a model pleace
-from .models import categoryModel,contentModel,ReviewModel,Notification,Like
+from .models import categoryModel,contentModel,ReviewModel,Notification,Like,WatchLog
 
 # this is a serializer pleace 
 
 from .serializer import categorySerializer,contentSerializer,reviewSeriailzer,LikeSerilizer
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.utils import timezone
 
 
 
@@ -48,3 +55,43 @@ class LikeViewset(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+def start_watching(request, content_id):
+    content = get_object_or_404(contentModel, id=content_id)
+    watch_log = WatchLog.objects.create(user=request.user, content=content, start_time=timezone.now())
+    return JsonResponse({'status': 'started', 'watch_log_id': watch_log.id})
+
+def stop_watching(request, watch_log_id):
+    watch_log = get_object_or_404(WatchLog, id=watch_log_id)
+    watch_log.end_time = timezone.now()
+    watch_log.save()
+    return JsonResponse({'status': 'stopped', 'watch_duration': watch_log.watch_duration()})
+
+
+
+
+
+def visualize_watch_times(request):
+    watch_logs = WatchLog.objects.filter(user=request.user)
+    durations = [log.watch_duration() for log in watch_logs if log.end_time]
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(durations, bins=20, edgecolor='black')
+    plt.title('Watch Time Distribution')
+    plt.xlabel('Duration (seconds)')
+    plt.ylabel('Frequency')
+
+    # Ensure the media directory exists
+    media_dir = settings.MEDIA_ROOT
+    if not os.path.exists(media_dir):
+        os.makedirs(media_dir)
+
+    # Save the plot to the media directory
+    plot_path = os.path.join(media_dir, 'watch_times.png')
+    plt.savefig(plot_path)
+    plt.close()  # Close the figure to free memory
+
+    # Pass the file URL to the template
+    plot_url = os.path.join(settings.MEDIA_URL, 'watch_times.png')
+    context = {'plot_url': plot_url}
+    return render(request, 'visualize_watch_times.html', context)
