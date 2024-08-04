@@ -81,17 +81,17 @@ def visualize_watch_times(request):
     plt.xlabel('Duration (seconds)')
     plt.ylabel('Frequency')
 
-    # Ensure the media directory exists
+   
     media_dir = settings.MEDIA_ROOT
     if not os.path.exists(media_dir):
         os.makedirs(media_dir)
 
-    # Save the plot to the media directory
+  
     plot_path = os.path.join(media_dir, 'watch_times.png')
     plt.savefig(plot_path)
-    plt.close()  # Close the figure to free memory
+    plt.close()  
 
-    # Pass the file URL to the template
+   
     plot_url = os.path.join(settings.MEDIA_URL, 'watch_times.png')
     context = {'plot_url': plot_url}
     return render(request, 'visualize_watch_times.html', context)
