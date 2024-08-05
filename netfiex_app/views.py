@@ -19,7 +19,7 @@ from .serializer import categorySerializer,contentSerializer,reviewSeriailzer,Li
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.utils import timezone
-
+from django.db.models import F
 
 
 class categoryViewsets(viewsets.ModelViewSet):
@@ -31,8 +31,14 @@ class ContentViewSet(viewsets.ModelViewSet):
     serializer_class = contentSerializer
 
     def retrieve(self, request, *args, **kwargs):
+        # contentCount = contentModel.objects.filter(id=kwargs['pk'])
+        # contentCount.update(
+        #     view =F('view') + 1,
+        # )
+        # return super().retrieve(request,args,kwargs)
+
+
         instance = self.get_object()
-        print('Instance ',instance)
         if request.user.is_authenticated:
             instance.view_count.add(request.user)
 
@@ -51,6 +57,7 @@ class reviewViewsets(viewsets.ModelViewSet):
 class LikeViewset(generics.CreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerilizer
+    print("serailizer : ",serializer_class)
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
